@@ -20,16 +20,21 @@ VetTV MCE is a custom Linux-based operating system that unifies:
 - **Base:** Batocera Linux (forked)
 - **Frontend:** Godot 4 custom dashboard
 - **Service layer:** Python (FastAPI)
-- **Target:** x86_64 systems, tier 1 minimum 4GB RAM
+- **Target:** x86_64 systems, 4GB RAM minimum
 
 ## Status
 
 **Phase 0 — Toolchain Verification**
 6-month roadmap to v1.0.
 
+## Related Projects
+
+- [boomerbox-os](https://github.com/Vet-TV/boomerbox-os) — sibling distro, Windows 98 aesthetic
+- [openps-stream](https://github.com/Vet-TV/openps-stream) — cloud streaming foundation work
+
 ## Created By
 
-[@Vet_TV](https://x.com/Vet_TV) — part of the VetTV / Channel82 TV creator ecosystem.
+Vet — [@Vet_TV](https://x.com/Vet_TV) on X | VetTV / Channel82 TV creator ecosystem
 
 ---
 
