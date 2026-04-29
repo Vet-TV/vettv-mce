@@ -18,7 +18,7 @@
 
 ## Layout (planned)
 
-```
+```text
 service-layer/
 ├── pyproject.toml
 ├── src/vettv_service/
