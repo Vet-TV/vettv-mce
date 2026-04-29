@@ -1,0 +1,43 @@
+name: IP hygiene flag
+description: Something in this repo, in a public reveal, or in a planned feature looks like it could trip Sony's IP firewall.
+title: "[ip-hygiene] "
+labels: ["ip-hygiene", "priority-high"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        IP hygiene reports get triaged first. The rule: **PS2-era inspired, never PS2-derived.** See `docs/02_IP-Hygiene-Rules.md`.
+  - type: input
+    id: location
+    attributes:
+      label: Where is the concern?
+      description: File path, commit hash, screenshot link, or the URL of a public asset (tweet, video, thumbnail).
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Naming / branding
+        - Typography (fonts)
+        - Visual (Memory Card shape, button glyphs, layouts)
+        - Audio (boot chime, ambient loops, SFX)
+        - Motion / animation
+        - Marketing language
+        - Bundled content (BIOS, ROMs)
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: concern
+    attributes:
+      label: What looks risky and why?
+      description: Cite the specific rule from `docs/02_IP-Hygiene-Rules.md` if you can.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested redesign or fix
+      description: Optional but appreciated. The creative space outside Sony's IP is enormous.
