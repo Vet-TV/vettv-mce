@@ -123,12 +123,13 @@ Full rebuilds only for kernel/OS changes. Frontend iterations should feel fast �
 
 ## Git Strategy
 
-- Private GitHub repo (public after v1.0 reveal, or keep frontend proprietary)
-- `main` branch = releasable
+- **Public** GitHub repo from Phase 0 — the dev-log content arc benefits from a visible build, and the IP hygiene rules in `docs/02_IP-Hygiene-Rules.md` are enforced from day one (no Sony IP ever lands in tree)
+- `main` branch = releasable, protected, requires `repo-checks` CI green
 - `dev` branch = integration
 - Feature branches per phase milestone (`phase-2/dashboard-scaffolding`, etc.)
 - Tag every phase completion: `v0.1-phase0`, `v0.2-phase1`, etc.
 - Commit in WSL2 or Windows — credential manager syncs between them
+- Frontend layer license decision (open-source for community theming vs. proprietary) finalized before Phase 5 ships, per blueprint open question
 
 ---
 

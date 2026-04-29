@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>VetTV: Memory Card Edition</title>
+    <meta name="description" content="A retro-futurist console operating system. PS2-era inspired. Built in public.">
+    <meta name="theme-color" content="#0a0e1f">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vettv-mce.com/">
+    <meta property="og:title" content="VetTV: Memory Card Edition">
+    <meta property="og:description" content="A retro-futurist console operating system. PS2-era inspired. Built in public.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@Vet_TV">
+    <meta name="twitter:creator" content="@Vet_TV">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+
+    <style>
+        :root {
+            --bg-0: #05060e;
+            --bg-1: #0a0e1f;
+            --bg-2: #131a35;
+            --ink: #e6ecff;
+            --ink-dim: #8a93b8;
+            --accent: #6dd3ff;
+            --accent-hot: #ff7ad9;
+            --accent-warm: #ffd166;
+            --rule: #1c2547;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { height: 100%; }
+
+        body {
+            margin: 0;
+            font-family: "Space Grotesk", "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(ellipse at 20% 10%, rgba(109, 211, 255, 0.18), transparent 50%),
+                radial-gradient(ellipse at 80% 90%, rgba(255, 122, 217, 0.14), transparent 55%),
+                linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 50%, var(--bg-2) 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* CRT scanlines — subtle, era-appropriate, not a 1:1 reproduction of any specific console effect */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0.018) 0px,
+                rgba(255, 255, 255, 0.018) 1px,
+                transparent 2px,
+                transparent 3px
+            );
+            z-index: 1;
+            mix-blend-mode: overlay;
+        }
+
+        /* Ambient drift — three slow-moving gradient blobs, generic 3D-space feel */
+        body::after {
+            content: "";
+            position: fixed;
+            inset: -20%;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 30% 40%, rgba(109, 211, 255, 0.10) 0%, transparent 12%),
+                radial-gradient(circle at 70% 70%, rgba(255, 122, 217, 0.08) 0%, transparent 14%),
+                radial-gradient(circle at 50% 20%, rgba(255, 209, 102, 0.06) 0%, transparent 10%);
+            animation: drift 60s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes drift {
+            0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+            100% { transform: translate3d(0, 0, 0) rotate(360deg); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body::after { animation: none; }
+        }
+
+        main {
+            position: relative;
+            z-index: 2;
+            max-width: 56rem;
+            margin: 0 auto;
+            padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: clamp(3rem, 10vw, 6rem);
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+        }
+
+        .channel {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .channel-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: var(--accent-hot);
+            box-shadow: 0 0 12px var(--accent-hot);
+            animation: pulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(0.85); }
+            50%      { opacity: 1;   transform: scale(1.15); }
+        }
+
+        .wordmark {
+            font-size: clamp(2.5rem, 8vw, 5.5rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 0.95;
+            margin: 0 0 1.25rem;
+            background: linear-gradient(120deg, var(--ink) 0%, var(--accent) 60%, var(--accent-hot) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .wordmark .sub {
+            display: block;
+            font-size: 0.4em;
+            font-weight: 500;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--ink-dim);
+            background: none;
+            -webkit-text-fill-color: var(--ink-dim);
+            margin-top: 1rem;
+        }
+
+        .tagline {
+            font-size: clamp(1.1rem, 2.4vw, 1.45rem);
+            color: var(--ink);
+            max-width: 38rem;
+            margin: 0 0 2.5rem;
+        }
+
+        .tagline em {
+            font-style: normal;
+            color: var(--accent);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.45rem 0.85rem;
+            border: 1px solid var(--rule);
+            border-radius: 999px;
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 0.78rem;
+            letter-spacing: 0.04em;
+            color: var(--ink-dim);
+            background: rgba(10, 14, 31, 0.5);
+            backdrop-filter: blur(8px);
+            margin-bottom: 3rem;
+        }
+
+        .status strong {
+            color: var(--accent-warm);
+            font-weight: 500;
+        }
+
+        .ctas {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            margin-bottom: clamp(3rem, 8vw, 5rem);
+        }
+
+        .cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.85rem 1.4rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .cta-primary {
+            background: linear-gradient(120deg, var(--accent) 0%, var(--accent-hot) 100%);
+            color: #07091a;
+            box-shadow: 0 6px 24px rgba(109, 211, 255, 0.25);
+        }
+
+        .cta-primary:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(109, 211, 255, 0.35); }
+
+        .cta-secondary {
+            background: rgba(20, 26, 53, 0.6);
+            color: var(--ink);
+            border: 1px solid var(--rule);
+            backdrop-filter: blur(8px);
+        }
+
+        .cta-secondary:hover { background: rgba(28, 37, 71, 0.8); transform: translateY(-1px); }
+
+        .columns {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+            gap: 1.25rem;
+            margin-bottom: clamp(3rem, 8vw, 5rem);
+        }
+
+        .col {
+            border: 1px solid var(--rule);
+            border-radius: 0.75rem;
+            padding: 1.4rem 1.4rem 1.6rem;
+            background: rgba(10, 14, 31, 0.4);
+            backdrop-filter: blur(10px);
+            transition: border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .col:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+        .col-num {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 0.78rem;
+            color: var(--accent);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.6rem;
+        }
+
+        .col h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 0.5rem;
+            color: var(--ink);
+        }
+
+        .col p {
+            margin: 0;
+            font-size: 0.92rem;
+            color: var(--ink-dim);
+            line-height: 1.5;
+        }
+
+        footer {
+            border-top: 1px solid var(--rule);
+            padding-top: 2rem;
+            font-family: "JetBrains Mono", ui-monospace, monospace;
+            font-size: 0.78rem;
+            color: var(--ink-dim);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        footer a {
+            color: var(--ink-dim);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--rule);
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+
+        footer a:hover { color: var(--accent); border-color: var(--accent); }
+
+        .legal {
+            text-align: right;
+        }
+
+        @media (max-width: 520px) {
+            footer { flex-direction: column; }
+            .legal { text-align: left; }
+        }
+
+        ::selection { background: var(--accent-hot); color: #07091a; }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <span class="channel"><span class="channel-dot" aria-hidden="true"></span>Channel 82 — building in public</span>
+            <span>Phase 0 / VI</span>
+        </header>
+
+        <h1 class="wordmark">
+            VetTV
+            <span class="sub">Memory Card Edition</span>
+        </h1>
+
+        <p class="tagline">
+            A retro-futurist console operating system. <em>Your memories, remastered.</em>
+            Inspired by the console dashboards of the early 2000s, remastered for 2026.
+        </p>
+
+        <div class="status">
+            <span>Status:</span>
+            <strong>Phase 0 — Toolchain Verification</strong>
+            <span>·</span>
+            <span>6-month roadmap to v1.0</span>
+        </div>
+
+        <div class="ctas">
+            <a class="cta cta-primary" href="https://github.com/Vet-TV/vettv-mce">
+                Source on GitHub →
+            </a>
+            <a class="cta cta-secondary" href="https://x.com/Vet_TV">
+                Follow @Vet_TV on X
+            </a>
+        </div>
+
+        <section class="columns" aria-label="Three-layer architecture">
+            <article class="col">
+                <div class="col-num">Layer 1</div>
+                <h3>The Foundation</h3>
+                <p>Forked Batocera Linux. Kernel, drivers, emulator backends. The default frontend never boots.</p>
+            </article>
+            <article class="col">
+                <div class="col-num">Layer 2</div>
+                <h3>The Bridge</h3>
+                <p>Python service daemon. Launches cores, syncs saves, monitors streaming health. FastAPI over Unix sockets.</p>
+            </article>
+            <article class="col">
+                <div class="col-num">Layer 3</div>
+                <h3>The Face</h3>
+                <p>Godot 4 dashboard. Six Memory Cards, ambient particles, original glyphs and motion. The whole experience.</p>
+            </article>
+        </section>
+
+        <footer>
+            <span>
+                <a href="https://github.com/Vet-TV/vettv-mce">github.com/Vet-TV/vettv-mce</a>
+                ·
+                <a href="https://github.com/Vet-TV/vettv-mce/blob/main/docs/01_VetTV-MCE-Blueprint.md">blueprint</a>
+                ·
+                <a href="https://x.com/Vet_TV">@Vet_TV</a>
+            </span>
+            <span class="legal">PS2-era inspired. No Sony IP used.</span>
+        </footer>
+    </main>
+</body>
+</html>
