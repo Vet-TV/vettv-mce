@@ -1,0 +1,52 @@
+name: Feature request
+description: Suggest something for a future phase.
+title: "[feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Feature requests are evaluated against the six-month phase plan in `docs/01_VetTV-MCE-Blueprint.md`. Anything outside scope is queued post-v1.0.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: One paragraph. What's missing, who hurts because of it, why now.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: How you'd see it work. Sketch the user-facing experience first; implementation second.
+    validations:
+      required: true
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase do you think this belongs to?
+      options:
+        - Phase 0 (foundation)
+        - Phase 1 (stripped base)
+        - Phase 2 (dashboard scaffolding)
+        - Phase 3 (retro card)
+        - Phase 4 (cloud card)
+        - Phase 5 (polish & content layers)
+        - Phase 6 (beta / release)
+        - Post-v1.0
+        - Unsure
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Confirmations
+      options:
+        - label: This proposal does not require reproducing Sony IP (per `docs/02_IP-Hygiene-Rules.md`).
+          required: true
+        - label: I have searched existing issues for duplicates.
+          required: true

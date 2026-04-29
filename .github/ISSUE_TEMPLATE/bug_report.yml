@@ -1,0 +1,62 @@
+name: Bug report
+description: Something in the OS image, frontend, or service layer is broken.
+title: "[bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        VetTV MCE is in **Phase 0** — pre-release. Bug reports are most useful when they pin a specific commit or image build.
+  - type: input
+    id: build
+    attributes:
+      label: Build / commit
+      description: Image filename, release tag, or commit hash where you observed this.
+      placeholder: "e.g. v0.1-phase0 or commit abc1234"
+    validations:
+      required: true
+  - type: dropdown
+    id: hardware-tier
+    attributes:
+      label: Hardware tier
+      description: See `docs/05_Hardware-Specs.md`.
+      options:
+        - Tier 1 (minimum)
+        - Tier 2 (recommended)
+        - Tier 3 (enthusiast)
+        - Hyper-V VM (dev)
+        - Other / unsure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you see, what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Boot image
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Any relevant logs, dmesg snippets, or service-layer output. Paste as code blocks.
+      render: shell
+  - type: checkboxes
+    id: hygiene
+    attributes:
+      label: Confirmations
+      options:
+        - label: I am not reporting a security vulnerability (those go to SECURITY.md, not here).
+          required: true
+        - label: I have searched existing issues for duplicates.
+          required: true

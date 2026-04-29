@@ -1,0 +1,65 @@
+name: repo-checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  markdown-lint:
+    name: Markdown lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint markdown
+        uses: DavidAnson/markdownlint-cli2-action@v16
+        with:
+          globs: |
+            **/*.md
+            !**/node_modules/**
+            !.github/**
+
+  license-tracking:
+    name: License tracking sanity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify licenses/ directory exists and has README
+        run: |
+          test -d licenses || { echo "licenses/ directory missing"; exit 1; }
+          test -f licenses/README.md || { echo "licenses/README.md missing"; exit 1; }
+      - name: Warn if frontend/ or assets/ have content but licenses/ is empty
+        run: |
+          shopt -s nullglob
+          frontend_content=$(find frontend -mindepth 1 -not -name 'README.md' -not -name '.gitkeep' | head -n1)
+          assets_content=$(find assets -mindepth 1 -not -name 'README.md' -not -name '.gitkeep' | head -n1)
+          license_entries=$(find licenses -mindepth 1 -name '*.md' -not -name 'README.md' | head -n1)
+          if [ -n "$frontend_content$assets_content" ] && [ -z "$license_entries" ]; then
+            echo "::warning::frontend/ or assets/ have content but licenses/ has no entries. Every third-party asset must be tracked. See docs/02_IP-Hygiene-Rules.md."
+          fi
+
+  blueprint-doc-presence:
+    name: Foundation docs present
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required docs exist
+        run: |
+          for f in \
+            README.md \
+            LICENSE \
+            CONTRIBUTING.md \
+            CODE_OF_CONDUCT.md \
+            SECURITY.md \
+            CHANGELOG.md \
+            docs/01_VetTV-MCE-Blueprint.md \
+            docs/02_IP-Hygiene-Rules.md \
+            docs/03_Windows11-Dev-Setup.md \
+            docs/04_Communication-Preferences.md \
+            docs/05_Hardware-Specs.md
+          do
+            test -f "$f" || { echo "Missing required file: $f"; exit 1; }
+          done
