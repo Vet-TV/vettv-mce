@@ -16,7 +16,7 @@ Parked-domain landing page for `vettv-mce.com`. Single self-contained `index.htm
 
 ### GitHub Pages (alternative)
 
-Settings → Pages → Source: **Deploy from a branch** → branch `main`, folder `/web`. (Requires moving `index.html` to `/docs` *or* configuring a Pages action — Cloudflare is simpler for `/web`.)
+Branch publishing supports only the repository root (`/`) or `/docs`, not `/web`. To publish this existing directory, select **GitHub Actions** under Settings → Pages and add a workflow that uploads `web/` as the Pages artifact. See [GitHub's custom workflow guide](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
 
 ## What's on the page
 
@@ -30,7 +30,7 @@ Settings → Pages → Source: **Deploy from a branch** → branch `main`, folde
 
 This page is reviewed against `docs/02_IP-Hygiene-Rules.md`. Specifically:
 
-- Fonts: **Space Grotesk** (approved) + **JetBrains Mono** (free OFL/Apache) — no Sony SST
+- Fonts: **Space Grotesk** (approved) + **JetBrains Mono** (OFL-1.1) — no Sony SST; see their entries in `licenses/`
 - No Memory Card visual reproduction — the card metaphor is verbal only
 - No DualShock/Sixaxis glyphs — no controller glyphs at all
 - No PS2 boot animation, no PS2 ambient audio

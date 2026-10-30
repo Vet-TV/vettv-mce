@@ -87,10 +87,6 @@
             100% { transform: translate3d(0, 0, 0) rotate(360deg); }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            body::after { animation: none; }
-        }
-
         main {
             position: relative;
             z-index: 2;
@@ -130,6 +126,11 @@
         @keyframes pulse {
             0%, 100% { opacity: 0.5; transform: scale(0.85); }
             50%      { opacity: 1;   transform: scale(1.15); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body::after { animation: none; }
+            .channel-dot { animation: none; }
         }
 
         .wordmark {
