@@ -1,0 +1,8 @@
+# Linux-targeted files must keep LF endings on every platform: the guest
+# cannot execute scripts with CRLF shebangs, and Godot files are LF-native.
+*.sh text eol=lf
+batocera-fork/overlay/userdata/system/services/vettv_frontend text eol=lf
+*.gd text eol=lf
+*.tscn text eol=lf
+project.godot text eol=lf
+export_presets.cfg text eol=lf

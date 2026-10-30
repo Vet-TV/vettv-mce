@@ -1,0 +1,90 @@
+#!/bin/bash
+# vettv_frontend - VetTV MCE Phase 1 user service (Batocera S99userservices).
+#
+# Replaces EmulationStation with the blank Godot frontend on display :0.
+# Batocera is SysV-init, not systemd: user services in
+# /userdata/system/services are the supported auto-launch hook (S99).
+# Enable with: batocera-services enable vettv_frontend
+#
+# The Godot binary + .pck are expected in /userdata/vettv/frontend/
+# (deployed by scripts/inject-frontend.sh).
+
+APP_DIR="/userdata/vettv/frontend"
+APP_BIN="${APP_DIR}/VetTV-MCE.x86_64"
+LOG="/userdata/system/logs/vettv-frontend.log"
+PIDFILE="/var/run/vettv-frontend.pid"
+LOCKFILE="/var/run/vettv-frontend.lock"
+
+log() {
+    echo "vettv: $(date '+%H:%M:%S') $*" >> "${LOG}"
+}
+
+wait_for_x() {
+    local i
+    for i in $(seq 1 90); do
+        [ -S /tmp/.X11-unix/X0 ] && pidof openbox >/dev/null && return 0
+        sleep 2
+    done
+    return 1
+}
+
+# ES is launched by emulationstation-standalone in a reboot loop. Remove
+# the loop flag first, then keep killing ES until it stays gone: at boot
+# the wrapper may only spawn ES after our first kill attempt.
+stop_es() {
+    /usr/bin/emulationstation-standalone --stop-rebooting 2>/dev/null
+    local i
+    for i in $(seq 1 45); do
+        if pidof emulationstation >/dev/null; then
+            killall emulationstation 2>/dev/null
+            sleep 2
+        else
+            # Confirm it stays gone (wrapper may be mid-respawn).
+            sleep 3
+            pidof emulationstation >/dev/null || return 0
+        fi
+    done
+    log "ES did not stay stopped"
+    return 1
+}
+
+start_frontend() {
+    # Serialize concurrent starts (S99 backgrounds services).
+    exec 9>"${LOCKFILE}"
+    flock -n 9 || return 0
+    if [ -f "${PIDFILE}" ] && kill -0 "$(cat "${PIDFILE}")" 2>/dev/null; then
+        return 0
+    fi
+    if [ ! -x "${APP_BIN}" ]; then
+        log "${APP_BIN} missing or not executable"
+        return 1
+    fi
+    if ! wait_for_x; then
+        # X can lose a DRM-master race with the splash mpv in VMs.
+        # Clear the splash player and retry the display stack once.
+        log "no X display, clearing splash and restarting S31"
+        killall -9 mpv 2>/dev/null
+        /etc/init.d/S31emulationstation restart >> "${LOG}" 2>&1
+        wait_for_x || { log "still no X display, giving up"; return 1; }
+    fi
+    stop_es || return 1
+    export DISPLAY=:0
+    export HOME=/userdata/system
+    export XDG_RUNTIME_DIR=/var/run
+    cd "${APP_DIR}" || return 1
+    nohup "${APP_BIN}" --fullscreen --rendering-driver opengl3 >> "${LOG}" 2>&1 &
+    echo $! > "${PIDFILE}"
+    log "frontend started, pid $(cat "${PIDFILE}")"
+}
+
+stop_frontend() {
+    [ -f "${PIDFILE}" ] && kill "$(cat "${PIDFILE}")" 2>/dev/null
+    rm -f "${PIDFILE}"
+}
+
+case "$1" in
+    start|"") start_frontend ;;
+    stop) stop_frontend ;;
+    restart) stop_frontend; start_frontend ;;
+    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac

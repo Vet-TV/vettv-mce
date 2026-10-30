@@ -8,7 +8,7 @@ Build and deploy automation. Fast iteration is the goal — frontend changes sho
 | --- | --- |
 | `build-image.sh` | Full Buildroot rebuild of the OS image (slow, kernel/OS-level changes only) |
 | `inject-frontend.sh` | Drop a fresh Godot Linux export into the existing image without a full rebuild |
-| `boot-vm.ps1` | Launch / reset the Hyper-V test VM with the latest image attached |
+| `boot-vm.ps1` | Start / stop / status / screenshot the test VM. Live now for VirtualBox 7 (documented fallback); Hyper-V support once the Hyper-V role is enabled on the dev host |
 | `deploy-usb.sh` | Flash the image to a USB drive for hardware testing |
 | `lint.sh` | Run all lint/format checks (markdown, Python, GDScript) before push |
 | `verify-licenses.sh` | Sanity-check that everything in `licenses/` matches assets in tree |
@@ -22,6 +22,6 @@ Build and deploy automation. Fast iteration is the goal — frontend changes sho
 
 ## Phase status
 
-- **Phase 0:** placeholder
-- **Phase 1:** `build-image.sh` and `boot-vm.ps1` go live
+- **Phase 0:** complete — `boot-vm.ps1` live (VirtualBox), vanilla Batocera verified booting
+- **Phase 1:** `build-image.sh` and `inject-frontend.sh` live — pinned image fetch/convert, overlay + frontend deploy over SSH
 - **Phase 2+:** the iteration loop scripts come online

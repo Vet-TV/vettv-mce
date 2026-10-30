@@ -6,9 +6,9 @@ This layer is the machine room: kernel, drivers, emulator backends, controller l
 
 ## What goes here
 
-- The forked Batocera tree (added as a subtree or submodule once Phase 1 begins)
-- VetTV-specific Buildroot package overlays
-- systemd unit that auto-launches the Godot frontend in place of EmulationStation
+- Pinned upstream release image (see `UPSTREAM.md`) — Phase 1 forks at image level, no Buildroot rebuild yet
+- VetTV overlay in `overlay/` (mirrors userdata paths): frontend user service, boot splash, settings
+- A Batocera user service (`S99userservices` hook — Batocera is SysV-init, not systemd) that auto-launches the Godot frontend in place of EmulationStation
 - Custom branding (boot splash, hostname, image metadata)
 - Patches against upstream Batocera, kept reviewable
 
@@ -24,8 +24,8 @@ Buildroot **must** run on the WSL2-native filesystem (`~/vettv-mce/...`), never 
 
 ## Phase status
 
-- **Phase 0:** vanilla Batocera builds and boots in Hyper-V VM
-- **Phase 1:** rebrand at image level, strip ES, systemd auto-launches blank Godot app, controller input verified
+- **Phase 0:** complete — vanilla Batocera boots in the test VM
+- **Phase 1:** rebrand at image level (hostname, custom splash), ES replaced at runtime by the `vettv_frontend` user service, blank Godot app auto-launches, keyboard input verified in VM. Known limitation: ES can flash briefly during boot (see `UPSTREAM.md`)
 
 ## IP hygiene
 
