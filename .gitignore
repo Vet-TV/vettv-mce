@@ -14,3 +14,10 @@ export_credentials.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+# Build output (Godot exports, OS images, VM disks)
+frontend/export/
+build-output/
+*.img
+*.vdi
+*.vhdx

@@ -19,8 +19,8 @@
 
 ## Phase status
 
-- **Phase 0:** scaffolded, empty
-- **Phase 1:** blank Godot app auto-launched via systemd on the custom image
+- **Phase 0:** complete — vanilla Batocera boots in the test VM (see `CHANGELOG.md`)
+- **Phase 1:** complete — blank Godot app auto-launches on the custom Batocera image via the `vettv_frontend` user service (see `batocera-fork/`); input verified in VM
 - **Phase 2:** dashboard scaffolding — six Memory Card columns, ambient particles, clock
 - **Phase 3+:** card-by-card feature integration
 

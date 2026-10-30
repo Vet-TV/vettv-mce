@@ -38,7 +38,7 @@ Entire user-facing experience. Boots directly after kernel init via a custom sys
 
 - **Base OS:** Batocera (forked) → Buildroot toolchain
 - **Kernel:** Batocera's tuned gaming kernel
-- **Init:** systemd (replaces Batocera default for Godot auto-launch)
+- **Init:** Batocera SysV init (corrected in Phase 1 — Batocera is not systemd). Godot auto-launches via a Batocera user service (`S99userservices`), which replaces EmulationStation on screen
 - **Frontend engine:** Godot 4.3+ stable
 - **Frontend language:** GDScript primary, C# for performance-critical modules
 - **Service layer:** Python 3.11+ with FastAPI (local IPC via Unix sockets)
