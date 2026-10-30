@@ -1,6 +1,6 @@
 # JetBrains Mono
 
-- **Source:** https://fonts.google.com/specimen/JetBrains+Mono
+- **Source:** <https://fonts.google.com/specimen/JetBrains+Mono>
 - **License:** OFL-1.1
 - **License file:** Not redistributed; [official OFL.txt](https://github.com/google/fonts/blob/main/ofl/jetbrainsmono/OFL.txt)
 - **Used in:** `web/index.html`

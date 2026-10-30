@@ -1,6 +1,6 @@
 # Space Grotesk
 
-- **Source:** https://fonts.google.com/specimen/Space+Grotesk
+- **Source:** <https://fonts.google.com/specimen/Space+Grotesk>
 - **License:** OFL-1.1
 - **License file:** Not redistributed; [official OFL.txt](https://github.com/google/fonts/blob/main/ofl/spacegrotesk/OFL.txt)
 - **Used in:** `web/index.html`
