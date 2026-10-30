@@ -38,6 +38,7 @@ Supporting trees:
 - [`scripts/`](scripts/) — build / deploy automation (bash + PowerShell)
 - [`assets/`](assets/) — design source files (Blender, Figma, Suno provenance)
 - [`licenses/`](licenses/) — third-party asset license tracking
+- [`web/`](web/) — parked landing page for `vettv-mce.com` (Cloudflare Pages-ready)
 - [`docs/`](docs/) — blueprint, IP hygiene rules, dev setup, comms, hardware
 
 ## Status
