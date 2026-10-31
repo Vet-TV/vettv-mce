@@ -7,7 +7,7 @@ extends Control
 ## dashboard drifts into Ambient Mode: clock grows, particles thicken,
 ## cards float. Any input snaps back. See blueprint sections 4-5.
 
-enum Mode { CARD, TILE }
+enum Mode { CARD, TILE, SYSTEM, GAME }
 
 const INK := Color("#e6ecff")
 const INK_DIM := Color("#8a93b8")
@@ -39,16 +39,67 @@ var _date_label: Label
 var _particles: GPUParticles2D
 
 var _tween: Tween
+var _http: HTTPRequest
+var _http_post: HTTPRequest
+var _retro_online: bool = false
+var _retro_eras: Array = []
+var _retro_systems: Dictionary = {}
+var _current_era: String = ""
+var _current_system: Dictionary = {}
 var _idle_seconds: float = 0.0
 var _ambient: bool = false
 var _last_clock_second: int = -1
 
 
+const SERVICE_URL := "http://127.0.0.1:8471"
+
 func _ready() -> void:
 	_cards = CardData.cards()
 	_build_ui()
+	_http = HTTPRequest.new()
+	_http.timeout = 4.0
+	add_child(_http)
+	_http.request_completed.connect(_on_systems_received)
+	_http_post = HTTPRequest.new()
+	_http_post.timeout = 10.0
+	add_child(_http_post)
+	_http_post.request_completed.connect(_on_launch_completed)
 	_refresh(true)
 	_update_clock(true)
+	_fetch_retro_systems()
+
+
+func _fetch_retro_systems() -> void:
+	var err := _http.request(SERVICE_URL + "/systems")
+	if err != OK:
+		_retro_online = false
+
+
+func _on_systems_received(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		_retro_online = false
+		if _cards[_card_index].get("id") == "retro":
+			_refresh(true)
+		return
+	var parsed: Variant = JSON.parse_string(body.get_string_from_utf8())
+	if not (parsed is Dictionary):
+		_retro_online = false
+		return
+	_retro_online = true
+	_retro_eras = parsed.get("eras", [])
+	_retro_systems.clear()
+	for system in parsed.get("systems", []):
+		_retro_systems[system["id"]] = system
+	if _cards[_card_index].get("id") == "retro":
+		_refresh(true)
+
+
+func _on_launch_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		var detail := body.get_string_from_utf8()
+		_status.text = "Launch failed (%d) %s" % [response_code, detail.substr(0, 80)]
+		return
+	_status.text = "Game running - close it to return to the dashboard"
 
 
 func _build_ui() -> void:
@@ -201,11 +252,20 @@ func _unhandled_input(event: InputEvent) -> void:
 	var acted := false
 	if event.is_action_pressed("ui_cancel"):
 		acted = true
-		if _mode == Mode.TILE:
-			_mode = Mode.CARD
-			_refresh(false)
-		else:
-			get_tree().quit()
+		match _mode:
+			Mode.GAME:
+				_mode = Mode.SYSTEM
+				_tile_index = 0
+				_refresh(false)
+			Mode.SYSTEM:
+				_mode = Mode.TILE
+				_tile_index = 0
+				_refresh(false)
+			Mode.TILE:
+				_mode = Mode.CARD
+				_refresh(false)
+			_:
+				get_tree().quit()
 	elif event.is_action_pressed("ui_accept"):
 		acted = true
 		if _mode == Mode.CARD:
@@ -280,12 +340,71 @@ func _on_card_clicked(index: int) -> void:
 	_refresh(false)
 
 
-func _activate_tile() -> void:
+func _is_retro() -> bool:
+	return _cards[_card_index].get("id") == "retro"
+
+
+func _current_items() -> Array:
+	# Each item: {label, detail, payload}. Drives tiles for every level.
+	var items: Array = []
 	var card: Dictionary = _cards[_card_index]
-	var tiles: Array = card["tiles"]
-	if _tile_index >= tiles.size():
+	match _mode:
+		Mode.CARD, Mode.TILE:
+			if _is_retro() and _retro_online:
+				for era_group in _retro_eras:
+					var systems: Array = era_group["systems"]
+					var games := 0
+					for s in systems:
+						games += int(s["game_count"])
+					items.append({"label": era_group["era"], "detail": "%d systems · %d games" % [systems.size(), games], "payload": era_group})
+			else:
+				for t in card["tiles"]:
+					items.append({"label": t, "detail": "", "payload": t})
+		Mode.SYSTEM:
+			for era_group in _retro_eras:
+				if era_group["era"] == _current_era:
+					for s in era_group["systems"]:
+						items.append({"label": s["name"], "detail": "%d games" % int(s["game_count"]), "payload": s})
+		Mode.GAME:
+			for g in _current_system.get("games", []):
+				var kb := int(g["size_bytes"]) / 1024.0
+				var size_text := "%.1f MB" % (kb / 1024.0) if kb >= 1024.0 else "%d KB" % int(kb)
+				items.append({"label": g["title"], "detail": size_text, "payload": g})
+	return items
+
+
+func _activate_tile() -> void:
+	var items := _current_items()
+	if _tile_index >= items.size():
 		return
-	_status.text = "%s / %s - lands in %s" % [card["title"], tiles[_tile_index], card["phase"]]
+	var item: Dictionary = items[_tile_index]
+	var card: Dictionary = _cards[_card_index]
+	match _mode:
+		Mode.TILE:
+			if _is_retro() and _retro_online:
+				_current_era = item["label"]
+				_mode = Mode.SYSTEM
+				_tile_index = 0
+				_refresh(false)
+			else:
+				_status.text = "%s / %s - lands in %s" % [card["title"], item["label"], card["phase"]]
+		Mode.SYSTEM:
+			_current_system = _retro_systems.get(item["payload"]["id"], {})
+			_mode = Mode.GAME
+			_tile_index = 0
+			_refresh(false)
+		Mode.GAME:
+			var game: Dictionary = item["payload"]
+			_status.text = "Launching %s..." % game["title"]
+			var payload := {"system": _current_system.get("id", ""), "game_path": game["path"]}
+			var err := _http_post.request(
+				SERVICE_URL + "/launch",
+				["Content-Type: application/json"],
+				HTTPClient.METHOD_POST,
+				JSON.stringify(payload)
+			)
+			if err != OK:
+				_status.text = "Launch failed - service busy (HTTP %d)" % err
 
 
 func _refresh(instant: bool) -> void:
@@ -297,15 +416,15 @@ func _refresh(instant: bool) -> void:
 		var face := _faces[i]
 		var focused := i == _card_index
 		var dist := absi(i - _card_index)
-		face.set_focus_state(focused, _mode == Mode.TILE and not focused)
+		face.set_focus_state(focused, _mode != Mode.CARD and not focused)
 		var target_scale := 0.94
 		var target_alpha := 0.55
 		if focused:
-			target_scale = 1.22 if _mode == Mode.TILE else 1.12
+			target_scale = 1.22 if _mode != Mode.CARD else 1.12
 			target_alpha = 1.0
 		elif dist == 1:
 			target_alpha = 0.8
-		if _mode == Mode.TILE and not focused:
+		if _mode != Mode.CARD and not focused:
 			target_alpha = 0.3
 		_tween.tween_property(face, "scale", Vector2.ONE * target_scale, dur)
 		_tween.tween_property(face, "modulate:a", target_alpha, dur)
@@ -313,9 +432,17 @@ func _refresh(instant: bool) -> void:
 	if _mode == Mode.CARD:
 		var card: Dictionary = _cards[_card_index]
 		_status.text = "%s - %s" % [card["title"], card["subtitle"]]
+		if _is_retro() and not _retro_online:
+			_status.text += "  (service offline)"
 		_hint.text = "Left / Right: choose card    Enter: open    Esc: quit (dev build)"
 	else:
-		_hint.text = "Arrows: choose tile    Enter: select    Esc: back"
+		match _mode:
+			Mode.TILE:
+				_hint.text = "Arrows: choose    Enter: open    Esc: back"
+			Mode.SYSTEM:
+				_hint.text = "Arrows: choose system    Enter: open    Esc: back"
+			Mode.GAME:
+				_hint.text = "Arrows: choose game    Enter: launch    Esc: back"
 		_activate_status_for_tile_focus()
 
 
@@ -326,30 +453,47 @@ func _rebuild_tiles() -> void:
 	_tiles.clear()
 	_tile_styles.clear()
 	var card: Dictionary = _cards[_card_index]
-	_tile_header.text = "%s  -  %s" % [card["title"], card["phase"]]
+	match _mode:
+		Mode.SYSTEM:
+			_tile_header.text = "Retro  -  %s" % _current_era
+		Mode.GAME:
+			_tile_header.text = "Retro  -  %s" % _current_system.get("name", "")
+		_:
+			_tile_header.text = "%s  -  %s" % [card["title"], "choose an era" if (_is_retro() and _retro_online) else card["phase"]]
 	_tile_header.add_theme_color_override("font_color", card["accent"])
-	var tiles: Array = card["tiles"]
+	var tiles := _current_items()
 	for i in tiles.size():
 		var tile := PanelContainer.new()
 		tile.custom_minimum_size = Vector2(248, 74)
 		var bg := StyleBoxFlat.new()
-		bg.bg_color = BG_TILE_FOCUSED if (_mode == Mode.TILE and i == _tile_index) else BG_TILE
+		bg.bg_color = BG_TILE_FOCUSED if (_mode != Mode.CARD and i == _tile_index) else BG_TILE
 		bg.set_corner_radius_all(10)
 		bg.content_margin_left = 16
 		bg.content_margin_right = 16
 		tile.add_theme_stylebox_override("panel", bg)
+		var stack := VBoxContainer.new()
+		stack.alignment = BoxContainer.ALIGNMENT_CENTER
+		stack.add_theme_constant_override("separation", 2)
+		tile.add_child(stack)
 		var label := Label.new()
-		label.text = tiles[i]
+		label.text = tiles[i]["label"]
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		label.add_theme_font_size_override("font_size", 21)
-		label.add_theme_color_override("font_color", INK if (_mode == Mode.TILE and i == _tile_index) else INK_DIM)
-		tile.add_child(label)
+		label.clip_text = true
+		label.add_theme_font_size_override("font_size", 20)
+		label.add_theme_color_override("font_color", INK if (_mode != Mode.CARD and i == _tile_index) else INK_DIM)
+		stack.add_child(label)
+		if tiles[i]["detail"] != "":
+			var detail := Label.new()
+			detail.text = tiles[i]["detail"]
+			detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			detail.add_theme_font_size_override("font_size", 15)
+			detail.add_theme_color_override("font_color", INK_DIM)
+			stack.add_child(detail)
 		tile.gui_input.connect(_on_tile_gui_input.bind(i))
 		_tile_grid.add_child(tile)
 		_tiles.append(tile)
 		_tile_styles.append(bg)
-		if _mode == Mode.TILE:
+		if _mode != Mode.CARD:
 			tile.scale = Vector2.ONE * 0.85
 			tile.modulate.a = 0.0
 			var tw := create_tween()
@@ -360,19 +504,27 @@ func _rebuild_tiles() -> void:
 
 
 func _activate_status_for_tile_focus() -> void:
-	var card: Dictionary = _cards[_card_index]
-	var tiles: Array = card["tiles"]
-	if _tile_index < tiles.size():
-		_status.text = "%s / %s" % [card["title"], tiles[_tile_index]]
+	var items := _current_items()
+	if _tile_index >= items.size():
+		return
+	var label: String = items[_tile_index]["label"]
+	match _mode:
+		Mode.TILE:
+			_status.text = "%s / %s" % [_cards[_card_index]["title"], label]
+		Mode.SYSTEM:
+			_status.text = "%s / %s" % [_current_era, label]
+		Mode.GAME:
+			_status.text = "%s / %s" % [_current_system.get("name", ""), label]
 
 
 func _on_tile_gui_input(event: InputEvent, index: int) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		_register_input()
-		if _mode == Mode.TILE and index == _tile_index:
+		if _mode != Mode.CARD and index == _tile_index:
 			_activate_tile()
 		else:
-			_mode = Mode.TILE
+			if _mode == Mode.CARD:
+				_mode = Mode.TILE
 			_tile_index = index
 			_refresh(false)
 
