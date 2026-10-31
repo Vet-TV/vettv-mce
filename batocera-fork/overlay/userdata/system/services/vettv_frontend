@@ -19,29 +19,44 @@ log() {
     echo "vettv: $(date '+%H:%M:%S') $*" >> "${LOG}"
 }
 
+DISPLAY_NUM=":0"
+
+# X does not always come up on :0 in VMs (a failed first attempt can
+# leave the real server on :1). Detect the live socket instead of
+# assuming, and remember it for the Godot launch.
 wait_for_x() {
-    local i
+    local i s
     for i in $(seq 1 90); do
-        [ -S /tmp/.X11-unix/X0 ] && pidof openbox >/dev/null && return 0
+        for s in /tmp/.X11-unix/X*; do
+            if [ -S "$s" ] && pidof openbox >/dev/null; then
+                DISPLAY_NUM=":${s##*X}"
+                return 0
+            fi
+        done
         sleep 2
     done
     return 1
 }
 
 # ES is launched by emulationstation-standalone in a reboot loop. Remove
-# the loop flag first, then keep killing ES until it stays gone: at boot
-# the wrapper may only spawn ES after our first kill attempt.
+# the loop flag first, then keep killing ES until both ES and the
+# wrapper are gone: the wrapper spends seconds in display setup between
+# ES exits and can relaunch ES after a naive one-shot kill (observed on
+# clean reboots), so a short "stays gone" check is not enough.
 stop_es() {
     /usr/bin/emulationstation-standalone --stop-rebooting 2>/dev/null
     local i
-    for i in $(seq 1 45); do
+    for i in $(seq 1 60); do
         if pidof emulationstation >/dev/null; then
             killall emulationstation 2>/dev/null
             sleep 2
+        elif ps aux | grep -q '[b]ash /usr/bin/emulationstation-standalone'; then
+            sleep 2
         else
-            # Confirm it stays gone (wrapper may be mid-respawn).
             sleep 3
-            pidof emulationstation >/dev/null || return 0
+            if ! pidof emulationstation >/dev/null && ! ps aux | grep -q '[b]ash /usr/bin/emulationstation-standalone'; then
+                return 0
+            fi
         fi
     done
     log "ES did not stay stopped"
@@ -52,8 +67,13 @@ start_frontend() {
     # Serialize concurrent starts (S99 backgrounds services).
     exec 9>"${LOCKFILE}"
     flock -n 9 || return 0
-    if [ -f "${PIDFILE}" ] && kill -0 "$(cat "${PIDFILE}")" 2>/dev/null; then
-        return 0
+    if [ -f "${PIDFILE}" ]; then
+        local oldpid
+        oldpid="$(cat "${PIDFILE}")"
+        # A zombie still answers kill -0; require a live app cmdline.
+        if kill -0 "${oldpid}" 2>/dev/null && grep -q "VetTV-MCE" "/proc/${oldpid}/cmdline" 2>/dev/null; then
+            return 0
+        fi
     fi
     if [ ! -x "${APP_BIN}" ]; then
         log "${APP_BIN} missing or not executable"
@@ -68,7 +88,7 @@ start_frontend() {
         wait_for_x || { log "still no X display, giving up"; return 1; }
     fi
     stop_es || return 1
-    export DISPLAY=:0
+    export DISPLAY="${DISPLAY_NUM}"
     export HOME=/userdata/system
     export XDG_RUNTIME_DIR=/var/run
     cd "${APP_DIR}" || return 1

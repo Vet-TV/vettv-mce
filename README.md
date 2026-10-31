@@ -3,7 +3,7 @@
 **A retro-futurist console operating system.**
 Inspired by the console dashboards of the early 2000s, remastered for 2026.
 
-[![Phase](https://img.shields.io/badge/phase-2%20%E2%80%94%20dashboard%20scaffolding-blue)](docs/01_VetTV-MCE-Blueprint.md#6-six-month-phase-plan)
+[![Phase](https://img.shields.io/badge/phase-3%20%E2%80%94%20retro%20card-blue)](docs/01_VetTV-MCE-Blueprint.md#6-six-month-phase-plan)
 [![Roadmap](https://img.shields.io/badge/roadmap-6%20months%20to%20v1.0-orange)](docs/01_VetTV-MCE-Blueprint.md#6-six-month-phase-plan)
 [![Base](https://img.shields.io/badge/base-batocera%20(forked)-1f6feb)](https://batocera.org)
 [![Frontend](https://img.shields.io/badge/frontend-godot%204-478cbf)](https://godotengine.org)
@@ -43,13 +43,13 @@ Supporting trees:
 
 ## Status
 
-**Phase 2 — Dashboard Scaffolding.** Phase 1 complete: the branded image boots straight to the blank Godot frontend. 6-month roadmap to v1.0.
+**Phase 3 — Retro Card.** Phase 2 complete: navigable dashboard with six placeholder Memory Cards. 6-month roadmap to v1.0.
 
 | # | Phase | Weeks | Deliverable |
 | --- | --- | --- | --- |
 | 0 | Foundation | 1–2 | Vanilla Batocera boots in a VM from Windows 11 host — **done** (VirtualBox fallback; Hyper-V pending host elevation) |
 | 1 | Stripped base | 3–4 | Custom-branded image boots to a blank Godot window with working input — **done** (ES hands off to Godot after boot) |
-| 2 | Dashboard scaffolding | 5–8 | Navigable dashboard with six placeholder cards |
+| 2 | Dashboard scaffolding | 5–8 | Navigable dashboard with six placeholder cards — **done** (tiles, clock, particles, idle Ambient Mode) |
 | 3 | Retro card | 9–12 | Select system → select game → launch → save / load works |
 | 4 | Cloud card | 13–16 | Seamless launch into GFN / Xbox Cloud / Luna / Boosteroid |
 | 5 | Polish & content layers | 17–20 | Boot ritual, ambient loops, themes — feels like a real product |

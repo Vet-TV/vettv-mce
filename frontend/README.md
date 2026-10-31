@@ -21,7 +21,7 @@
 
 - **Phase 0:** complete — vanilla Batocera boots in the test VM (see `CHANGELOG.md`)
 - **Phase 1:** complete — blank Godot app auto-launches on the custom Batocera image via the `vettv_frontend` user service (see `batocera-fork/`); input verified in VM
-- **Phase 2:** dashboard scaffolding — six Memory Card columns, ambient particles, clock
+- **Phase 2:** complete — navigable dashboard: six Memory Cards (`card_data.gd`, `card_face.gd`, dashboard in `main.gd`), placeholder tile grids, ambient particles, live clock, 90 s idle Ambient Mode. Verified in VM and on a Windows build. Note: idle detection counts deliberate presses only — pointer-motion events can arrive continuously in VMs and starve Ambient Mode
 - **Phase 3+:** card-by-card feature integration
 
 ## IP hygiene

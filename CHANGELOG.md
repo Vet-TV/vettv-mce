@@ -7,6 +7,7 @@ All notable changes to VetTV: Memory Card Edition. Format follows [Keep a Change
 ### Added
 
 - Phase 1 blank Godot frontend: `frontend/project.godot`, `main.tscn`, `main.gd` (dark window, title, live input readout, Esc quits), original `icon.svg`, Linux x86_64 export preset
+- Phase 2 dashboard scaffolding: six Memory Cards with placeholder tile grids (`frontend/card_data.gd`, `card_face.gd`, dashboard controller in `main.gd`), D-pad/keyboard navigation (Left/Right cards, Enter opens, arrows browse tiles, Esc back), live clock, ambient particles, 90-second idle Ambient Mode, Windows export preset for host-side testing
 - `scripts/boot-vm.ps1` — start / stop / status / screenshot the test VM (VirtualBox 7)
 - `web/index.html` — parked-domain landing page for `vettv-mce.com`. Self-contained HTML, Space Grotesk + JetBrains Mono, IP-hygiene clean, Cloudflare Pages-ready
 - `web/README.md` — deploy instructions and IP-hygiene review notes for the landing page
@@ -21,6 +22,7 @@ All notable changes to VetTV: Memory Card Edition. Format follows [Keep a Change
 - Dev host toolchain: Godot 4.7.2 Mono + Linux export templates, VS Code extensions, WSL2 build packages installed. Hyper-V role not enabled on this host (needs elevation + reboot); VirtualBox fallback in use per `docs/03`
 - Phase 1 blank frontend exports for Linux x86_64 and smoke-runs under WSL (starts and stays running, no script errors)
 - **Phase 1 complete:** Batocera 43.1 image-level fork in `batocera-fork/` (pinned upstream + userdata overlay). After a clean reboot the VM boots to the blank VetTV Godot frontend: `vettv_frontend` user service stops EmulationStation and launches the app fullscreen, hostname is `VETTV-MCE`, custom VetTV splash deployed, keyboard input verified in the frontend. Known limitations: ES is visible briefly during boot before the handoff; Godot load takes minutes under VirtualBox software rendering (VM-only)
+- **Phase 2 complete:** dashboard verified live in the VM (card navigation, tile open/browse/activate/back, clock) and Ambient Mode verified on the Windows export (VirtualBox frame presentation stalls without input, so idle visuals were proven on host). Service hardened in the process: live X display detection (`:0`/`:1`), ES wrapper-aware stop, zombie-safe restart guard
 
 ## [0.1.0] — 2026-04 — Phase 0 launch-ready
 
