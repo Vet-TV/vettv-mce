@@ -1,0 +1,44 @@
+#!/bin/bash
+# vettv_service - VetTV MCE Layer 2 daemon (Batocera S99userservices).
+#
+# Runs the FastAPI service from userdata so it survives Batocera's
+# read-only rootfs. Layout (deployed by scripts/inject-service.sh):
+#   /userdata/vettv/service/vettv_service/   package source
+#   /userdata/vettv/pylibs/                  pip --target dependencies
+# API on 127.0.0.1:8471 (localhost only; the Godot frontend is the client).
+
+APP_HOME="/userdata/vettv"
+LOG="/userdata/system/logs/vettv-service.log"
+PIDFILE="/var/run/vettv-service.pid"
+
+export PYTHONPATH="${APP_HOME}/pylibs:${APP_HOME}/service"
+export VETTV_ROMS_DIR="${VETTV_ROMS_DIR:-/userdata/roms}"
+export VETTV_SAVES_DIR="${VETTV_SAVES_DIR:-/userdata/saves}"
+export VETTV_HOST="127.0.0.1"
+export VETTV_PORT="8471"
+
+start_service() {
+    if [ -f "${PIDFILE}" ]; then
+        local oldpid
+        oldpid="$(cat "${PIDFILE}")"
+        if kill -0 "${oldpid}" 2>/dev/null && grep -q "vettv_service" "/proc/${oldpid}/cmdline" 2>/dev/null; then
+            return 0
+        fi
+    fi
+    cd "${APP_HOME}/service" || return 1
+    nohup python3 -m vettv_service.main >> "${LOG}" 2>&1 &
+    echo $! > "${PIDFILE}"
+    echo "vettv-service: started pid $(cat "${PIDFILE}")" >> "${LOG}"
+}
+
+stop_service() {
+    [ -f "${PIDFILE}" ] && kill "$(cat "${PIDFILE}")" 2>/dev/null
+    rm -f "${PIDFILE}"
+}
+
+case "$1" in
+    start|"") start_service ;;
+    stop) stop_service ;;
+    restart) stop_service; start_service ;;
+    *) echo "Usage: $0 {start|stop|restart}"; exit 1 ;;
+esac
